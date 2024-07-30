@@ -51,7 +51,7 @@ on:
 env:
   PROJECT_ID: nifty-yeti-429817-d1 # TODO: update Google Cloud project id
   GAR_LOCATION: us-central1 # TODO: update Artifact Registry location
-
+  SERVICE: pomigos
 jobs:
   deploy:
     # Add 'id-token' with the intended permissions for workload identity federation
