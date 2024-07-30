@@ -42,11 +42,11 @@ jobs:
       # Build and push client image
       - name: Build and Push Client Image
         run: |-
-          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}:${{ github.sha }}" ./client
-          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}:${{ github.sha }}"
+          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}/website:${{ github.sha }}" ./client
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.CLIENT_SERVICE }}/website:${{ github.sha }}"
 
       # Build and push server image
       - name: Build and Push Server Image
         run: |-
-          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}:${{ github.sha }}" ./server
-          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}:${{ github.sha }}"
+          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}/website:${{ github.sha }}" ./server
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVER_SERVICE }}/website:${{ github.sha }}"
