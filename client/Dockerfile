@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . ./
+RUN chmod -R 755 /app/node_modules
+RUN chmod -R 755 /app
 RUN npm run build
 
 # Stage 2 - the production environment
