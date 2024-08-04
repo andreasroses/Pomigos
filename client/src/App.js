@@ -4,6 +4,7 @@ import { IconContext } from 'react-icons';
 import './index.css';
 import axios from 'axios';
 import LoadBoards from './components/BoardTasks';
+import PomodoroTimer from './components/PomodoroTimer';
 
 const apiCall = () => {
   axios.get('http://localhost:8080').then((data) => {
@@ -32,6 +33,7 @@ function App() {
           </button>
         </div>
         <div>
+          <PomodoroTimer />
         </div>
       </div>
     </main>
