@@ -16,7 +16,7 @@ function App() {
   const [isAdding, setIsAdding] = useState(false);
 
   const addNewBoard = async () => {
-    // const newBoard: Omit<Board, 'id'> = { name: '' }; // Omit the id since it's auto-generated
+    const newBoardName = ''; // Omit the id since it's auto-generated
     // await db.boards.add(newBoard);
     setIsAdding(true);
   };
