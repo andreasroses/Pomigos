@@ -9,7 +9,8 @@ pymysql.install_as_MySQLdb()
 
 app = Flask(__name__, static_folder='static')
 
-# Set environment variable for Google Cloud credentials
+# Set environment variable for Google Cloud credentials/
+# json file in trello
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/cdmal/OneDrive/Documents/1cloudsystems/nifty-yeti-429817-d1-5ab9ebaadbe3.json"
 
 # Create a Cloud SQL Connector instance
@@ -35,7 +36,7 @@ CORS(app)
 
 # Task model
 class Task(db.Model):
-    __tablename__ = 'tasks'
+    __tablename__ = 'task'
     task_id = db.Column(db.Integer, primary_key=True)
     task_name = db.Column(db.String(255), nullable=False)
     task_description = db.Column(db.String(255), nullable=False)

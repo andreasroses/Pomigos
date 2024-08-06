@@ -1,21 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import { ThemeProvider } from "./contexts/ThemeContext";
-import ClientThemeWrapper from "./contexts/ClientThemeWrapper";
-import Navbar from "./components/Navbar";
+import Tasks from './components/Tasks';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+ReactDOM.render(
   <React.StrictMode>
-    <ThemeProvider>
-      <ClientThemeWrapper>
-        <Navbar />
-        <br></br>
-        <App />
-      </ClientThemeWrapper>
-    </ThemeProvider>
-  </React.StrictMode>
+    <Tasks />
+  </React.StrictMode>,
+  document.getElementById('root')
 );
-
