@@ -3,9 +3,13 @@ services:
     build: ./server
     container_name: server_backend
     ports:
-      - '4000:4000'
+      - '4000:5000'  # Map host port 4000 to container port 5000 (Flask default)
     volumes:
       - ./server:/app
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_RUN_HOST=0.0.0.0
+
   client:
     build: ./client
     container_name: client_frontend

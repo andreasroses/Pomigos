@@ -30,7 +30,7 @@ function Tasks({ isAdding, setIsAdding }) {
         const response = await fetch('/add_task', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ task_name: 'New Task', task_description: 'Task Description' })
+            body: JSON.stringify({ task_name: 'New Task', task_description: 'Task Description', board_id: '${board_id}'})
         });
         const newTask = await response.json();
         setTasks([...tasks, newTask]);
