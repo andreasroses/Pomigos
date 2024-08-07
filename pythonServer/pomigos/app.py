@@ -5,6 +5,7 @@ from flask_cors import CORS
 import pymysql
 from google.cloud.sql.connector import Connector
 import os
+import time
 
 pymysql.install_as_MySQLdb()
 
@@ -148,6 +149,23 @@ def add_board():
         })
     except Exception as e:
         return jsonify({'error': str(e)})
+
+# Route to save Pomodoro session
+@app.route('/session', methods=['POST'])
+def save_session():
+    try:
+        data = request.get_json()
+        duration = data['duration']
+        timestamp = time.time()
+        session = {
+            'duration': duration,
+            'timestamp': timestamp
+        }
+        # Here you would typically save the session to a database
+        return jsonify({'message': 'Session saved', 'session': session}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
 
 event.listen(Board, 'after_insert', after_insert_board)
 
