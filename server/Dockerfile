@@ -8,6 +8,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/nifty-yeti-429817-d1-5ab9ebaadbe3.json
 
 EXPOSE 5000
 
@@ -17,3 +18,4 @@ ENV FLASK_RUN_HOST=0.0.0.0
 
 # Run the Flask app
 CMD ["flask", "run"]
+
