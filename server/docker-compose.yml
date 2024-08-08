@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  server_backend:
+    build: .
+    ports:
+      - "5000:5000"
+    secrets:
+      - gcloud_credentials
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcloud_credentials
+    volumes:
+      - ./static:/app/static
+      - ./templates:/app/templates
+
+secrets:
+  gcloud_credentials:
+    external: true
