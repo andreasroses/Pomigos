@@ -8,9 +8,9 @@ services:
       - '3000:5000'  # Map host port 4000 to container port 5000 (Flask default)
     volumes:
       - ./server:/app
-        -./server/nifty-yeti-429817-d1-5ab9ebaadbe3.json:/app/nifty-yeti-429817-d1-5ab9ebaadbe3.json
-        -./server/static:/app/static
-        -./server/templates:/app/templates
+      - ./server/nifty-yeti-429817-d1-5ab9ebaadbe3.json:/app/nifty-yeti-429817-d1-5ab9ebaadbe3.json
+      - ./server/static:/app/static
+      - ./server/templates:/app/templates
     environment:
       - FLASK_APP=app.py
       - FLASK_RUN_HOST=0.0.0.0
