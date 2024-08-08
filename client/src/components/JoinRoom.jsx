@@ -10,7 +10,7 @@ function JoinRoom({ onJoinRoom }) {
     const handleJoinClick = async () => {
         // Call the join room backend function
         try {
-            await fetch('http://localhost:5000/join_room', {
+            await fetch('/join_room', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ room_id: inputRoomId })

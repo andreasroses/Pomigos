@@ -21,7 +21,7 @@ FROM nginx:alpine
 # Copy the build artifacts from the previous stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 3000
 
 # Start Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
