@@ -9,15 +9,45 @@ from google.cloud.sql.connector import Connector
 import os
 import time
 import logging
+from google.cloud import secretmanager
+import tempfile
+
 
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+def access_secret_version(project_id, secret_id, version_id="latest"):
+    """
+    Access the payload for the given secret version if one exists. The version
+    can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
+    """
+    # Create the Secret Manager client.
+    client = secretmanager.SecretManagerServiceClient()
+
+    # Build the resource name of the secret version.
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+
+    # Access the secret version.
+    response = client.access_secret_version(name=name)
+
+    # Return the decoded payload.
+    return response.payload.data.decode("UTF-8")
+
+# Fetch the Google Cloud credentials from Secret Manager
+project_id = "nifty-yeti-429817-d1"
+secret_id = "google-cloud-credentials"
+google_credentials_content = access_secret_version(project_id, secret_id)
+
+# Write the credentials to a temporary file
+with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_file:
+    temp_file.write(google_credentials_content.encode('utf-8'))
+    credentials_path = temp_file.name
+
+
 # Set environment variable for Google Cloud credentials
-google_credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', './nifty-yeti-429817-d1-5ab9ebaadbe3.json')
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = google_credentials_path
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_path
 
 # Create a Cloud SQL Connector instance
 connector = Connector()
@@ -79,7 +109,7 @@ def after_insert_board(mapper, connection, target):
         'board_id': target.board_id,
         'board_name': target.board_name,
         'user_id': target.user_id,
-        'shared' : target.shared
+        'shared': target.shared
     }})
 
 def after_update_board(mapper, connection, target):
@@ -87,7 +117,7 @@ def after_update_board(mapper, connection, target):
         'board_id': target.board_id,
         'board_name': target.board_name,
         'user_id': target.user_id,
-        'shared' : target.shared
+        'shared': target.shared
     }})
 
 @app.route('/')
