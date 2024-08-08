@@ -1,18 +1,29 @@
-# Stage 1
-FROM node:20 as react-build
+# Stage 1: Build the React application
+FROM node:20 AS build
+
 WORKDIR /app
+
+# Copy package.json and package-lock.json to leverage Docker cache
 COPY package.json package-lock.json ./
 RUN npm install
-COPY . ./
-RUN chmod -R 755 /app/node_modules
-RUN chmod -R 755 /app
+
+# Copy the rest of the application source code
+COPY . .
+
+ENV REACT_APP_SOCKET_URL=34.42.101.170:80 
+
+# Build the React application
 RUN npm run build
 
-# Stage 2 - the production environment
+# Stage 2: Serve the application with Nginx
 FROM nginx:alpine
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=react-build /app/build /usr/share/nginx/html
+
+# Copy the build artifacts from the previous stage
+COPY --from=build /app/build /usr/share/nginx/html
+
 EXPOSE 80
+
+# Start Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
 # FROM node:17-alpine
 

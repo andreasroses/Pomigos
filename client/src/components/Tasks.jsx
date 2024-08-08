@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function Tasks({ isAdding, setIsAdding }) {
+function Tasks({ isAdding, setIsAdding, boardID }) {
     const [tasks, setTasks] = useState([]);
     const [editableTaskId, setEditableTaskId] = useState(null);
     const [inputName, setInputName] = useState('');
@@ -8,10 +8,10 @@ function Tasks({ isAdding, setIsAdding }) {
 
     useEffect(() => {
         fetchTasks();
-    }, []);
+    }, [boardID]); // Fetch tasks when boardID changes
 
     useEffect(() => {
-        if (isAdding && tasks && tasks.length > 0) {
+        if (isAdding && tasks.length > 0) {
             const newTask = tasks[tasks.length - 1];
             setEditableTaskId(newTask.task_id);
             setInputName(newTask.task_name);
@@ -21,48 +21,68 @@ function Tasks({ isAdding, setIsAdding }) {
     }, [isAdding, tasks, setIsAdding]);
 
     const fetchTasks = async () => {
-        const response = await fetch('/tasks');
-        const data = await response.json();
-        setTasks(data);
+        try {
+            const response = await fetch(`/tasks/${boardID}`); // Fetch tasks for the given boardID
+            const data = await response.json();
+            setTasks(data);
+        } catch (error) {
+            console.error('Failed to fetch tasks:', error);
+        }
     };
 
     const addTask = async () => {
-        const response = await fetch('/add_task', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ task_name: 'New Task', task_description: 'Task Description', board_id: '${board_id}'})
-        });
-        const newTask = await response.json();
-        setTasks([...tasks, newTask]);
-        setIsAdding(true);
+        try {
+            const response = await fetch('/add_task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    task_name: 'New Task',
+                    task_description: 'Task Description',
+                    board_id: boardID
+                })
+            });
+            const newTask = await response.json();
+            setTasks([...tasks, newTask]);
+            setIsAdding(true);
+        } catch (error) {
+            console.error('Failed to add task:', error);
+        }
     };
 
     const updateTask = async (id) => {
-        await fetch(`/add_task`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ task_id: id, task_name: inputName, task_description: inputDescription })
-        });
-        fetchTasks();
-        setEditableTaskId(null);
+        try {
+            await fetch(`/update_task/${id}`, { // Ensure this endpoint exists
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task_name: inputName, task_description: inputDescription })
+            });
+            fetchTasks();
+            setEditableTaskId(null);
+        } catch (error) {
+            console.error('Failed to update task:', error);
+        }
     };
 
     const deleteTask = async (id) => {
-        await fetch(`/delete_task`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ task_id: id })
-        });
-        fetchTasks();
+        try {
+            await fetch(`/delete_task/${id}`, { // Ensure this endpoint exists
+                method: 'DELETE'
+            });
+            fetchTasks();
+        } catch (error) {
+            console.error('Failed to delete task:', error);
+        }
     };
 
     const completeTask = async (id) => {
-        await fetch(`/complete_task`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ task_id: id })
-        });
-        fetchTasks();
+        try {
+            await fetch(`/complete_task/${id}`, { // Ensure this endpoint exists
+                method: 'POST'
+            });
+            fetchTasks();
+        } catch (error) {
+            console.error('Failed to complete task:', error);
+        }
     };
 
     const handleNameChange = (e) => {

@@ -37,7 +37,7 @@ function PomodoroTimer() {
   };
 
   const saveSession = async () => {
-    await axios.post('http://localhost:5000/session', {
+    await axios.post('session', {
       duration: 25 * 60 - (minutes * 60 + seconds)
     });
   };

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import io from 'socket.io-client';
+import { socket } from '../socket';
 
-const socket = io('http://localhost:8080'); // Ensure the socket URL matches your server
-
-function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID }) {
+function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID, onBoardSelect }) {
     const [boards, setBoards] = useState([]);
     const [editableBoardId, setEditableBoardId] = useState(null);
     const [inputValue, setInputValue] = useState('');
@@ -98,6 +96,7 @@ function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID }) {
                             <h2 className="card-title text-xl" onClick={() => {
                                 setEditableBoardId(board.id);
                                 setInputValue(board.name);
+                                onBoardSelect(board.id); // Notify parent of selected board
                             }}>
                                 {board.name || 'New Board'}
                             </h2>
