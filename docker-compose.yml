@@ -5,18 +5,12 @@ services:
     build: ./server
     container_name: server_backend-1
     ports:
-      - '4000:5000'  # Map host port 4000 to container port 5000 (Flask default)
+      - '3000:5000'  # Map host port 4000 to container port 5000 (Flask default)
     volumes:
       - ./server:/app
-<<<<<<< Updated upstream
-      - ./server/nifty-yeti-429817-d1-5ab9ebaadbe3.json:/app/nifty-yeti-429817-d1-5ab9ebaadbe3.json
-      - ./static:/app/static
-      - ./templates:/app/templates
-=======
         -./server/nifty-yeti-429817-d1-5ab9ebaadbe3.json:/app/nifty-yeti-429817-d1-5ab9ebaadbe3.json
         -./server/static:/app/static
         -./server/templates:/app/templates
->>>>>>> Stashed changes
     environment:
       - FLASK_APP=app.py
       - FLASK_RUN_HOST=0.0.0.0
