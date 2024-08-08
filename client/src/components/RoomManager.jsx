@@ -1,25 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const RoomManager = () => {
-    const [roomID, setRoomID] = useState(null);
+const RoomManager = ({ roomID, setRoomID }) => {
+    const [newRoomID, setNewRoomID] = useState(null);
     const [roomURL, setRoomURL] = useState('');
 
     useEffect(() => {
-        const fetchRoomID = async () => {
-            try {
-                const response = await axios.post('/add_room');
-                const newRoomID = response.data.room_id;
-                setRoomID(newRoomID);
-                localStorage.setItem('roomID', newRoomID);
-                setRoomURL(`${window.location.origin}/join_room/${newRoomID}`);
-            } catch (error) {
-                console.error('Error creating room:', error);
-            }
-        };
+        // If a roomID is provided via props, use it
+        if (roomID) {
+            setRoomURL(`${window.location.origin}/join_room/${roomID}`);
+        } else {
+            // Check localStorage for an existing room ID
+            const storedRoomID = localStorage.getItem('roomID');
+            if (storedRoomID) {
+                setRoomID(storedRoomID);
+                setRoomURL(`${window.location.origin}/join_room/${storedRoomID}`);
+            } else {
+                // No room ID in localStorage, create a new room
+                const fetchRoomID = async () => {
+                    try {
+                        const response = await axios.post('http://localhost:5000/add_room');
+                        const fetchedRoomID = response.data.room_id;
+                        setNewRoomID(fetchedRoomID);
+                        localStorage.setItem('roomID', fetchedRoomID);
+                        setRoomURL(`${window.location.origin}/join_room/${fetchedRoomID}`);
+                        setRoomID(fetchedRoomID);
+                    } catch (error) {
+                        console.error('Error creating room:', error);
+                    }
+                };
 
-        fetchRoomID();
-    }, []);
+                fetchRoomID();
+            }
+        }
+    }, [roomID, setRoomID]);
 
     const handleCopyClick = () => {
         navigator.clipboard.writeText(roomURL);
@@ -27,14 +41,13 @@ const RoomManager = () => {
     };
 
     return (
-        <div>
-            {roomID ? (
+        <div className='mx-4'>
+            {roomID || newRoomID ? (
                 <div>
-                    <p>Room ID: {roomID}</p>
-                    <button onClick={handleCopyClick}>
-                        Show Room URL
+                    <p className='underline'>Room ID: {roomID || newRoomID}</p>
+                    <button onClick={handleCopyClick} className='btn btn-sm btn-secondary'>
+                        Copy Room URL
                     </button>
-                    <p>Room URL: {roomURL}</p>
                 </div>
             ) : (
                 <p>Creating room...</p>

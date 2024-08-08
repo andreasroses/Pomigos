@@ -10,7 +10,7 @@ RUN npm install
 # Copy the rest of the application source code
 COPY . .
 
-ENV REACT_APP_SOCKET_URL=34.42.101.170:80 
+# ENV REACT_APP_SOCKET_URL=34.42.101.170:80 
 
 # Build the React application
 RUN npm run build
@@ -21,7 +21,7 @@ FROM nginx:alpine
 # Copy the build artifacts from the previous stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-EXPOSE 3000
+EXPOSE 80
 
 # Start Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]

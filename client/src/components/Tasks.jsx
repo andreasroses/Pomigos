@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function Tasks({ isAdding, setIsAdding, boardID }) {
+function Tasks({ isAdding, setIsAdding, editableBoardId }) {
     const [tasks, setTasks] = useState([]);
     const [editableTaskId, setEditableTaskId] = useState(null);
     const [inputName, setInputName] = useState('');
@@ -22,7 +22,9 @@ function Tasks({ isAdding, setIsAdding, boardID }) {
 
     const fetchTasks = async () => {
         try {
-            const response = await fetch(`/tasks/${boardID}`); // Fetch tasks for the given boardID
+            const response = await axios.post('http://localhost:5000/tasks', {}, {
+                params: { board_id: editableBoardId}
+            }); // Fetch tasks for the given boardID
             const data = await response.json();
             setTasks(data);
         } catch (error) {
@@ -32,7 +34,7 @@ function Tasks({ isAdding, setIsAdding, boardID }) {
 
     const addTask = async () => {
         try {
-            const response = await fetch('/add_task', {
+            const response = await fetch('http://localhost:5000/add_task', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -51,7 +53,7 @@ function Tasks({ isAdding, setIsAdding, boardID }) {
 
     const updateTask = async (id) => {
         try {
-            await fetch(`/update_task/${id}`, { // Ensure this endpoint exists
+            await fetch(`http://localhost:5000/update_task/${id}`, { // Ensure this endpoint exists
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ task_name: inputName, task_description: inputDescription })
@@ -65,7 +67,7 @@ function Tasks({ isAdding, setIsAdding, boardID }) {
 
     const deleteTask = async (id) => {
         try {
-            await fetch(`/delete_task/${id}`, { // Ensure this endpoint exists
+            await fetch(`http://localhost:5000/delete_task/${id}`, { // Ensure this endpoint exists
                 method: 'DELETE'
             });
             fetchTasks();
@@ -76,7 +78,7 @@ function Tasks({ isAdding, setIsAdding, boardID }) {
 
     const completeTask = async (id) => {
         try {
-            await fetch(`/complete_task/${id}`, { // Ensure this endpoint exists
+            await fetch(`http://localhost:5000/complete_task/${id}`, { // Ensure this endpoint exists
                 method: 'POST'
             });
             fetchTasks();

@@ -11,7 +11,9 @@ function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID, onBoardSele
     useEffect(() => {
         const fetchBoards = async () => {
             try {
-                const response = await axios.get(`/get_boards/${roomID}`);
+                const response = await axios.post('http://localhost:5000/boards', {}, {
+                    params: { user_id: userID, shared: shared}
+                });
                 setBoards(response.data.boards);
             } catch (error) {
                 console.error('Failed to fetch boards:', error);

@@ -13,14 +13,14 @@ services:
       - ./server/templates:/app/templates
     environment:
       - FLASK_APP=app.py
-      - FLASK_RUN_HOST=0.0.0.0
+      # - FLASK_RUN_HOST=0.0.0.0
       - GOOGLE_APPLICATION_CREDENTIALS=/app/nifty-yeti-429817-d1-5ab9ebaadbe3.json
 
   client:
     build: ./client
     container_name: client_frontend
     ports:
-      - '3000:3000'
+      - '3000:80'
     volumes:
       - ./client:/app
       - ./app/node_modules:/app/node_modules
