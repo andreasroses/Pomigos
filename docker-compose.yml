@@ -1,7 +1,7 @@
 services:
   server:
     build: ./server
-    container_name: server_backend
+    container_name: server_backend-1
     ports:
       - '4000:5000'  # Map host port 4000 to container port 5000 (Flask default)
     volumes:
