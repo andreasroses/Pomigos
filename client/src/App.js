@@ -11,8 +11,8 @@ import UserManager from "./components/UserManager";
 
 function App() {
   const [isAdding, setIsAdding] = useState(false);
-  const [roomID, setRoomID] = useState(null);
-  const [userID, setUserID] = useState(3);
+  const [roomID, setRoomID] = useState('');
+  const [userID, setUserID] = useState(0);
 
   useEffect(() => {
     const urlRoomID = new URL(window.location.href).pathname.split("/").pop();
@@ -62,17 +62,17 @@ function App() {
   return (
     <main>
       <RoomManager roomID={roomID} setRoomID={setRoomID} />
+      <UserManager userID={userID} setUserID={setUserID} roomID={roomID} />
       <br />
-      {roomID ? (
+      {roomID && userID ? (
         <>
-          <UserManager userID={userID} setUserID={setUserID} roomID={roomID} />
           <div className="grid grid-cols-3 gap-10 mx-2">
             <div className="col-span-1 flex flex-col gap-4">
               <LoadBoards
                 isAdding={isAdding}
                 setIsAdding={setIsAdding}
                 userID={userID}
-                shared={true}
+                shared={false}
                 roomID={roomID}
               />
               <button
@@ -90,7 +90,7 @@ function App() {
                 isAdding={isAdding}
                 setIsAdding={setIsAdding}
                 userID={userID}
-                shared={false}
+                shared={true}
                 roomID={roomID}
               />
               <button
@@ -109,7 +109,7 @@ function App() {
           </div>
         </>
       ) : (
-        <JoinRoom />
+        <p> No user set </p>
       )}
     </main>
   );

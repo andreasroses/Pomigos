@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { socket } from '../socket';
-
+import Tasks from './Tasks';
 function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID, onBoardSelect }) {
     const [boards, setBoards] = useState([]);
     const [editableBoardId, setEditableBoardId] = useState(null);
@@ -11,22 +11,22 @@ function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID, onBoardSele
     useEffect(() => {
         const fetchBoards = async () => {
             try {
-                const response = await axios.post('http://localhost:5000/boards', {}, {
-                    params: { user_id: userID, shared: shared}
+                const response = await axios.get('http://localhost:5000/boards', {
+                    params: { user_id: userID, shared: shared }
                 });
-                setBoards(response.data.boards);
+                setBoards(response.data);
             } catch (error) {
                 console.error('Failed to fetch boards:', error);
             }
         };
-        
+    
         fetchBoards();
     }, [roomID]);
 
     // Handle real-time updates with socket
     useEffect(() => {
         const handleBoardAdded = (data) => {
-            if (data.board.room_id === roomID) {
+            if (data.board.room_id === roomID && data.board.shared === shared) {
                 setBoards((prevBoards) => [...prevBoards, data.board]);
             }
         };
@@ -35,6 +35,20 @@ function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID, onBoardSele
 
         return () => {
             socket.off('board_added', handleBoardAdded);
+        };
+    }, [roomID]);
+    
+    useEffect(() => {
+        const handleBoardUpdate = (data) => {
+            if (data.board.room_id === roomID && data.board.shared === shared) {
+                setBoards((prevBoards) => [...prevBoards, data.board]);
+            }
+        };
+
+        socket.on('board_updated', handleBoardUpdate);
+
+        return () => {
+            socket.off('board_updated', handleBoardUpdate);
         };
     }, [roomID]);
 
@@ -64,9 +78,9 @@ function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID, onBoardSele
 
     const updateBoard = async (id) => {
         try {
-            const response = await axios.put(`/update_board/${id}`, {
+            const response = await axios.put(`/update_board`, {
+                board_id: id,
                 board_name: inputValue,
-                user_id: userID
             });
             const updatedBoard = response.data;
             setBoards((prevBoards) =>
@@ -103,7 +117,7 @@ function LoadBoards({ isAdding, setIsAdding, userID, shared, roomID, onBoardSele
                                 {board.name || 'New Board'}
                             </h2>
                         )}
-                        <div></div>
+                        <div><Tasks editableBoardId = {board.id}/></div>
                     </div>
                 </div>
             ))}

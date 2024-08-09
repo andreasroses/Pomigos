@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-
-function Tasks({ isAdding, setIsAdding, editableBoardId }) {
+import axios from 'axios';
+import { socket } from '../socket';
+function Tasks({ editableBoardId }) {
+    const [isAdding, setIsAdding] = useState(false);
     const [tasks, setTasks] = useState([]);
     const [editableTaskId, setEditableTaskId] = useState(null);
     const [inputName, setInputName] = useState('');
@@ -8,7 +10,7 @@ function Tasks({ isAdding, setIsAdding, editableBoardId }) {
 
     useEffect(() => {
         fetchTasks();
-    }, [boardID]); // Fetch tasks when boardID changes
+    }, []);
 
     useEffect(() => {
         if (isAdding && tasks.length > 0) {
@@ -22,7 +24,7 @@ function Tasks({ isAdding, setIsAdding, editableBoardId }) {
 
     const fetchTasks = async () => {
         try {
-            const response = await axios.post('http://localhost:5000/tasks', {}, {
+            const response = await axios.get('http://localhost:5000/tasks', {}, {
                 params: { board_id: editableBoardId}
             }); // Fetch tasks for the given boardID
             const data = await response.json();
@@ -40,7 +42,7 @@ function Tasks({ isAdding, setIsAdding, editableBoardId }) {
                 body: JSON.stringify({
                     task_name: 'New Task',
                     task_description: 'Task Description',
-                    board_id: boardID
+                    board_id: editableBoardId
                 })
             });
             const newTask = await response.json();

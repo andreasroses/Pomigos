@@ -11,7 +11,7 @@ import time
 import logging
 from google.cloud import secretmanager
 import tempfile
-
+from sqlalchemy import event
 
 pymysql.install_as_MySQLdb()
 
@@ -74,7 +74,6 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 }
 
 db = SQLAlchemy(app)
-CORS(app)
 
 class Room(db.Model):
     __tablename__ = 'room'
@@ -92,13 +91,13 @@ class Board(db.Model):
     __tablename__ = 'board'
     board_id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.String(100), db.ForeignKey('room.room_id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     shared = db.Column(db.Boolean, default=False)
     board_name = db.Column(db.String(100), nullable=False)
 
 class User(db.Model):
     __tablename__ = 'user'
-    user_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.String(100), db.ForeignKey('room.room_id'), nullable=False)
 
 def after_insert_task(mapper, connection, target):
@@ -120,6 +119,7 @@ def after_insert_board(mapper, connection, target):
 def after_update_board(mapper, connection, target):
     socketio.emit('board_updated', {'board': {
         'board_id': target.board_id,
+        'room_id': target.room_id,
         'board_name': target.board_name,
         'user_id': target.user_id,
         'shared': target.shared
@@ -133,27 +133,33 @@ def index():
 def get_tasks():
     try:
         board_id = request.args.get('board_id', type=int)
+        if board_id is None:
+            return jsonify({'error': 'board_id is required'}), 400
+
         tasks = Task.query.filter_by(board_id=board_id).all()
         tasks_list = [{'task_id': task.task_id, 'task_name': task.task_name, 'task_description': task.task_description, 'completion': task.completion, 'board_id': task.board_id} for task in tasks]
         return jsonify(tasks_list)
     except Exception as e:
         logging.error(f"Error fetching tasks: {e}")
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/boards')
 def get_boards():
     try:
         user_id = request.args.get('user_id', type=int)
         shared = request.args.get('shared', type=bool)
+        if user_id is None:
+            return jsonify({'error': 'user_id is required'}), 400
+
         query = Board.query
         query = query.filter_by(user_id=user_id)
         query = query.filter_by(shared=shared)
         boards = query.all()
-        boards_list = [{'board_id': board.board_id, 'board_name': board.boardk_name} for board in boards]
+        boards_list = [{'board_id': board.board_id, 'board_name': board.board_name} for board in boards]
         return jsonify(boards_list)
     except Exception as e:
-        logging.error(f"Error fetching tasks: {e}")
-        return jsonify({'error': str(e)})
+        logging.error(f"Error fetching boards: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/add_task', methods=['POST'])
 def add_task():
@@ -198,27 +204,24 @@ def complete_task():
         logging.error(f"Error marking task as complete: {e}")
         return jsonify({'error': str(e)})
 
-@app.route('/add_board/', methods=['POST'])
+@app.route('/add_board', methods=['POST'])
 def add_board():
     try:
         data = request.get_json()
-        new_board = Board(
-            user_id=data['user_id'],
-            room_id = data['room_id'],
-            board_name=data['board_name'],
-            shared=data.get('shared', False),
-        )
+        board_name = data.get('board_name')
+        user_id = data.get('user_id')
+        is_shared = data.get('is_shared')
+        room_id = data.get('room_id')
+        
+        # Add logic to create a new board
+        new_board = Board(board_name=board_name, user_id=user_id, shared=is_shared, room_id=room_id)
         db.session.add(new_board)
         db.session.commit()
-        return jsonify({
-            'board_id': new_board.board_id,
-            'user_id': new_board.user_id,
-            'board_name': new_board.board_name,
-            'shared': new_board.shared
-        })
+        
+        return jsonify({'board_id': new_board.board_id}), 201
     except Exception as e:
         logging.error(f"Error adding board: {e}")
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/session', methods=['POST'])
 def save_session():
@@ -240,13 +243,12 @@ def update_board(board_id):
     try:
         data = request.get_json()
         board_id = request.args.get('board_id', type=int)
+        board_name = request.args.get('board_name', type=string)
         board = Board.query.get(board_id)
         if not board:
             return jsonify({'error': 'Board not found'}), 404
         if 'board_name' in data:
             board.board_name = data['board_name']
-        if 'shared' in data:
-            board.shared = data['shared']
         db.session.commit()
         return jsonify({
             'board_id': board.board_id,
@@ -270,13 +272,15 @@ def add_room():
         logging.error(f"Error adding room: {e}")
         return jsonify({'error': str(e)})
     
-@app.route('/add_user<int:room_id>', methods=['POST'])
-def add_user(room_id):
+@app.route('/add_user', methods=['POST'])
+def add_user():
     try:
-        newUser = User(room_id)
+        data = request.get_json()
+        room_id = data.get('room_id')
+        newUser = User(room_id=room_id)
         db.session.add(newUser)
         db.session.commit()
-        return jsonify({'room_id': newUser.user_id})
+        return jsonify({'user_id': newUser.id})
     except Exception as e:
         logging.error(f"Error adding user: {e}")
         return jsonify({'error': str(e)})
@@ -289,9 +293,11 @@ def join_room(room_id):
     else:
         return jsonify({'error': 'Room not found'}), 404
 
-@app.route('/<path:path>')
-def static_proxy(path):
-    return send_from_directory(app.static_folder, path)
+# @app.route('/<path:path>')
+# def static_proxy(path):
+#     return send_from_directory(app.static_folder, path)
+event.listen(Board, 'after_insert', after_insert_board)
+event.listen(Board,'after_update',after_update_board)
 
 if __name__ == '__main__':
     app.config['DEBUG'] = True  # Enable debug mode

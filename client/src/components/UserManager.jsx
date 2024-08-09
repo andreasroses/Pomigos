@@ -18,6 +18,7 @@ const UserManager = ({ userID, setUserID, roomID }) => {
                     const fetchedUserID = response.data.user_id;
                     localStorage.setItem('userID', fetchedUserID);
                     setUserID(fetchedUserID);
+                    console.log(fetchedUserID);
                 } catch (error) {
                     console.error('Error creating user:', error);
                 }
