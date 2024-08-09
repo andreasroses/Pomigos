@@ -132,13 +132,20 @@ def index():
 @app.route('/tasks')
 def get_tasks():
     try:
-        board_id = request.args.get('board_id', type=int)
-        if board_id is None:
+        board_id = request.args.get('board_id')
+        if not board_id:
             return jsonify({'error': 'board_id is required'}), 400
-
-        tasks = Task.query.filter_by(board_id=board_id).all()
-        tasks_list = [{'task_id': task.task_id, 'task_name': task.task_name, 'task_description': task.task_description, 'completion': task.completion, 'board_id': task.board_id} for task in tasks]
+        try:
+            boardNum = int(board_id)
+        except ValueError:
+            return jsonify({'error': 'Invalid board_id format'}), 400
+        tasks = Task.query.filter_by(board_id=boardNum).all()
+        tasks_list = [{'task_id': task.task_id,'task_name': task.task_name,'task_description': task.task_description,'completion': task.completion,'board_id': task.board_id} for task in tasks
+        ]
         return jsonify(tasks_list)
+    except SQLAlchemyError as e:
+        logging.error(f"Database error fetching tasks: {e}")
+        return jsonify({'error': 'Database error'}), 500
     except Exception as e:
         logging.error(f"Error fetching tasks: {e}")
         return jsonify({'error': str(e)}), 500
@@ -164,9 +171,8 @@ def get_boards():
 @app.route('/add_task', methods=['POST'])
 def add_task():
     try:
-        board_id = request.args.get('board_id', type=int)
         data = request.get_json()
-        new_task = Task(task_name=data['task_name'], task_description=data['task_description'], board_id=board_id)
+        new_task = Task(task_name=data['task_name'], task_description=data['task_description'], board_id=data['board_id'])
         db.session.add(new_task)
         db.session.commit()
         return jsonify({'task_id': new_task.task_id, 'task_name': new_task.task_name, 'task_description': new_task.task_description})
@@ -238,18 +244,23 @@ def save_session():
         logging.error(f"Error saving session: {e}")
         return jsonify({'error': str(e)})
 
-@app.route('/update_board/', methods=['PUT'])
-def update_board(board_id):
+@app.route('/update_board', methods=['POST'])
+def update_board():
     try:
         data = request.get_json()
-        board_id = request.args.get('board_id', type=int)
-        board_name = request.args.get('board_name', type=string)
+        board_id = data.get('board_id')
+        board_name = data.get('board_name')
+        
+        if not board_id or not board_name:
+            return jsonify({'error': 'Missing board_id or board_name'}), 400
+        
         board = Board.query.get(board_id)
         if not board:
             return jsonify({'error': 'Board not found'}), 404
-        if 'board_name' in data:
-            board.board_name = data['board_name']
+        
+        board.board_name = board_name
         db.session.commit()
+        
         return jsonify({
             'board_id': board.board_id,
             'user_id': board.user_id,

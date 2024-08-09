@@ -66,8 +66,8 @@ function App() {
       <br />
       {roomID && userID ? (
         <>
-          <div className="grid grid-cols-3 gap-10 mx-2">
-            <div className="col-span-1 flex flex-col gap-4">
+          <div className="grid grid-cols-3 gap-10 mx-2 flex-auto">
+            <div className="col-span-1 flex flex-col gap-4 flex-auto">
               <LoadBoards
                 isAdding={isAdding}
                 setIsAdding={setIsAdding}
@@ -76,7 +76,7 @@ function App() {
                 roomID={roomID}
               />
               <button
-                className="btn btn-neutral flex"
+                className="btn btn-neutral flex-none"
                 onClick={() => addNewBoard(false)}
               >
                 <IconContext.Provider value={{ size: "30" }}>
@@ -85,7 +85,7 @@ function App() {
                 <p className="text-lg">Add new board</p>
               </button>
             </div>
-            <div className="col-span-1 flex flex-col gap-4">
+            <div className="col-span-1 flex flex-col gap-4 flex-auto">
               <LoadBoards
                 isAdding={isAdding}
                 setIsAdding={setIsAdding}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { socket } from '../socket';
-function Tasks({ editableBoardId }) {
+function Tasks({ boardID }) {
     const [isAdding, setIsAdding] = useState(false);
     const [tasks, setTasks] = useState([]);
     const [editableTaskId, setEditableTaskId] = useState(null);
@@ -24,10 +24,10 @@ function Tasks({ editableBoardId }) {
 
     const fetchTasks = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/tasks', {}, {
-                params: { board_id: editableBoardId}
-            }); // Fetch tasks for the given boardID
-            const data = await response.json();
+            const response = await axios.get('http://localhost:5000/tasks', {
+                params: { board_id: boardID }
+            });
+            const data = response.data; // Axios handles JSON parsing
             setTasks(data);
         } catch (error) {
             console.error('Failed to fetch tasks:', error);
@@ -36,17 +36,18 @@ function Tasks({ editableBoardId }) {
 
     const addTask = async () => {
         try {
-            const response = await fetch('http://localhost:5000/add_task', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    task_name: 'New Task',
-                    task_description: 'Task Description',
-                    board_id: editableBoardId
-                })
-            });
-            const newTask = await response.json();
-            setTasks([...tasks, newTask]);
+            await axios.post(
+                "http://localhost:5000/add_board",
+                {
+                    task_name: "New task",
+                    task_description: "some desc",
+                    board_id: boardID,
+                },
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+            fetchTasks();
             setIsAdding(true);
         } catch (error) {
             console.error('Failed to add task:', error);
@@ -111,8 +112,8 @@ function Tasks({ editableBoardId }) {
         <>
             <button onClick={addTask}>Add Task</button>
             {tasks.map((task) => (
-                <div className="card card-compact w-96 shadow-xl" key={task.task_id}>
-                    <div className="card-body">
+                <div className="card card-compact w-96" key={task.task_id}>
+                    <div className="card-body card-secondary">
                         {editableTaskId === task.task_id ? (
                             <>
                                 <input
